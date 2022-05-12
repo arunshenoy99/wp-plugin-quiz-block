@@ -22,13 +22,20 @@ class AreYouPayingAttention {
         // We use dynamic blocks this way. Here the save(),function in js will return null and we can make changes to
         // theHTML without passing deprecated. In the DB only the attributes will be stored in the comment and the actual html will not be stored which
         // is also the reason why we do not get the invalid block type error.
-        wp_register_style('quizeditcss', plugin_dir_url(__FILE__) . 'build/index.css');
-        wp_register_script('ournewblocktype', plugin_dir_url(__FILE__) . 'build/index.js', array('wp-blocks', 'wp-element', 'wp-editor'));
-        register_block_type('ourplugin/are-you-paying-attention', array(
-            'editor_script' => 'ournewblocktype',
-            'render_callback' => array($this, 'theHTML'),
-            'editor_style' => 'quizeditcss'
+
+        register_block_type(__DIR__, array(
+            'render_callback' => array($this, 'theHTML')
         ));
+
+        // Use the below lines when registering a custom dynamic block type without the block.json
+        // wp_register_style('quizeditcss', plugin_dir_url(__FILE__) . 'build/index.css');
+        // wp_register_script('ournewblocktype', plugin_dir_url(__FILE__) . 'build/index.js', array('wp-blocks', 'wp-element', 'wp-editor'));
+        // register_block_type('ourplugin/are-you-paying-attention', array(
+        //     'editor_script' => 'ournewblocktype',
+        //     'render_callback' => array($this, 'theHTML'),
+        //     'editor_style' => 'quizeditcss'
+        // ));
+
         // We use the below enqueue when we are loading the javascript file in which the save returns hardcoded html.
         // wp_enqueue_script('ournewblocktype', plugin_dir_url(__FILE__) . 'build/index.js', array('wp-blocks', 'wp-element'));
     }
@@ -37,9 +44,14 @@ class AreYouPayingAttention {
         // Here we are using the output buffer, ob_start says store whatever comes next in the output buffer.
         // ob_get_clean returns all the html that was stored in the output buffer.
         // wp-element is required to import react and reactdom
+        
+        
         if (!is_admin()) {
+        // We cannot load the view script using viewScript property of block.json if we are using a render_callback function.
+        // You can also comment this and use the script property of block.json but this will load the script in both the ediotr and viewing pages.
             wp_enqueue_script('attentionFrontend', plugin_dir_url(__FILE__) . 'build/frontend.js', array('wp-element'));
-            wp_enqueue_style('attentionFrontendStyle', plugin_dir_url(__FILE__) . 'build/frontend.css');
+        // Use the code below to load css and js for the block view in a post page. 
+        //     wp_enqueue_style('attentionFrontendStyle', plugin_dir_url(__FILE__) . 'build/frontend.css');
         }
         ob_start(); ?>
         <div class="paying-attention-update-me"><pre style="display: none;"><?php echo wp_json_encode($attributes); ?></pre></div>
